@@ -3,7 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 
-export function AppHeader({ orgName }: { orgName?: string }) {
+export function AppHeader({ orgName }: { orgName?: string | undefined }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
