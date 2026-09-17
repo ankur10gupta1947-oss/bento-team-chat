@@ -1,24 +1,57 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Button } from "@/components/ui/button";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
-  component: Index,
+  head: () => ({
+    meta: [
+      { title: "BENTO — Calm team communication you own" },
+      {
+        name: "description",
+        content:
+          "BENTO is a private, hosted team communication tool for small and midsize companies. Announcements and team discussion without the noise.",
+      },
+      { property: "og:title", content: "BENTO — Calm team communication you own" },
+      {
+        property: "og:description",
+        content: "A private, hosted alternative to Slack and WhatsApp for company announcements.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
+  component: Landing,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
+function Landing() {
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
+    <main className="min-h-screen bg-background">
+      <header className="mx-auto flex max-w-5xl items-center justify-between px-6 py-8">
+        <span className="font-display text-2xl tracking-tight">BENTO</span>
+        <Link to="/auth">
+          <Button variant="ghost">Sign in</Button>
+        </Link>
+      </header>
+
+      <section className="mx-auto max-w-3xl px-6 pt-16 pb-24 text-center">
+        <p className="text-sm uppercase tracking-[0.2em] text-muted-foreground">Private team communication</p>
+        <h1 className="mt-6 text-5xl leading-tight sm:text-6xl">
+          A calmer place for your company's announcements.
+        </h1>
+        <p className="mx-auto mt-6 max-w-xl text-lg text-muted-foreground">
+          Your company's conversations, hosted privately and kept strictly separate from everyone
+          else's. No noise, no sprawl.
+        </p>
+        <div className="mt-10 flex flex-wrap justify-center gap-3">
+          <Link to="/auth" search={{ mode: "signup" }}>
+            <Button size="lg">Create your organization</Button>
+          </Link>
+          <Link to="/auth">
+            <Button size="lg" variant="outline">
+              Sign in
+            </Button>
+          </Link>
+        </div>
+      </section>
+    </main>
   );
 }
