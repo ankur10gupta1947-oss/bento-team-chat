@@ -29,6 +29,11 @@ export function AppHeader({ orgName }: { orgName?: string | undefined }) {
               Home
             </Button>
           </Link>
+          <Link to="/groups">
+            <Button variant="ghost" size="sm">
+              Groups
+            </Button>
+          </Link>
           <Link to="/settings">
             <Button variant="ghost" size="sm">
               Settings
