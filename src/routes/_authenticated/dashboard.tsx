@@ -85,7 +85,11 @@ function Dashboard() {
             </div>
 
             <p className="mt-10 text-sm text-muted-foreground">
-              Groups, posts and discussion arrive in the next phase.
+              See the{" "}
+              <Link to="/groups" className="underline underline-offset-4">
+                groups
+              </Link>{" "}
+              you belong to. Posts and discussion arrive in the next phase.
             </p>
           </>
         )}
