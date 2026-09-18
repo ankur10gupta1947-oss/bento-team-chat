@@ -10,10 +10,12 @@ import {
   setGroupArchived,
 } from "@/lib/groups.functions";
 import { getOrgContext } from "@/lib/org.functions";
+import { createPost, deletePost, listPosts } from "@/lib/posts.functions";
 import { AppHeader } from "@/components/AppHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/groups/$groupId")({
