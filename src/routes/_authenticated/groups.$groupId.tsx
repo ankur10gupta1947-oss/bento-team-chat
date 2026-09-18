@@ -68,8 +68,19 @@ function GroupDetailPage() {
     enabled: Boolean(data),
   });
 
+  const fetchEngagement = useServerFn(getGroupEngagement);
+  const addComment = useServerFn(createComment);
+  const removeComment = useServerFn(deleteComment);
+  const react = useServerFn(setReaction);
+  const { data: engagement, refetch: refetchEngagement } = useQuery({
+    queryKey: ["engagement", groupId],
+    queryFn: () => fetchEngagement({ data: { groupId } }),
+    enabled: Boolean(data),
+  });
+
   const [newName, setNewName] = useState("");
   const [draft, setDraft] = useState("");
+  const [commentDrafts, setCommentDrafts] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
 
   async function run(fn: () => Promise<unknown>, success: string) {
