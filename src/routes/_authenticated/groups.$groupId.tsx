@@ -10,10 +10,12 @@ import {
   setGroupArchived,
 } from "@/lib/groups.functions";
 import { getOrgContext } from "@/lib/org.functions";
+import { createPost, deletePost, listPosts } from "@/lib/posts.functions";
 import { AppHeader } from "@/components/AppHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/groups/$groupId")({
@@ -45,7 +47,21 @@ function GroupDetailPage() {
     queryFn: () => fetchGroup({ data: { id: groupId } }),
   });
 
+  const fetchPosts = useServerFn(listPosts);
+  const addPost = useServerFn(createPost);
+  const removePost = useServerFn(deletePost);
+  const {
+    data: posts,
+    isPending: postsPending,
+    refetch: refetchPosts,
+  } = useQuery({
+    queryKey: ["posts", groupId],
+    queryFn: () => fetchPosts({ data: { groupId } }),
+    enabled: Boolean(data),
+  });
+
   const [newName, setNewName] = useState("");
+  const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
 
   async function run(fn: () => Promise<unknown>, success: string) {
@@ -64,6 +80,7 @@ function GroupDetailPage() {
   const isAdmin = data?.isAdmin ?? false;
   const memberIds = new Set((data?.members ?? []).map((m) => m.id));
   const candidates = (ctx?.members ?? []).filter((m) => !memberIds.has(m.id));
+  const isMember = ctx?.profile ? memberIds.has(ctx.profile.id) : false;
 
   return (
     <div className="min-h-screen bg-background">
@@ -92,6 +109,76 @@ function GroupDetailPage() {
                 {data.group.archived_at ? " · archived" : ""}
               </p>
             </div>
+
+            <section className="surface p-6">
+              <h2 className="text-xl">Feed</h2>
+
+              {isMember && !data.group.archived_at ? (
+                <div className="mt-4 space-y-3">
+                  <Textarea
+                    value={draft}
+                    placeholder="Share something with this group…"
+                    rows={3}
+                    onChange={(e) => setDraft(e.target.value)}
+                  />
+                  <div className="flex justify-end">
+                    <Button
+                      disabled={busy || draft.trim().length === 0}
+                      onClick={() =>
+                        run(async () => {
+                          await addPost({ data: { groupId, content: draft.trim() } });
+                          setDraft("");
+                          await refetchPosts();
+                        }, "Posted.")
+                      }
+                    >
+                      Post
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <p className="mt-3 text-sm text-muted-foreground">
+                  {data.group.archived_at
+                    ? "This group is archived, so new posts are turned off."
+                    : "You're viewing this group as an admin. Add yourself to it to post."}
+                </p>
+              )}
+
+              <div className="mt-6 space-y-4">
+                {postsPending && <p className="text-sm text-muted-foreground">Loading posts…</p>}
+                {!postsPending && (posts ?? []).length === 0 && (
+                  <p className="text-sm text-muted-foreground">No posts yet.</p>
+                )}
+                {(posts ?? []).map((p) => (
+                  <article key={p.id} className="rounded-lg border border-border p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-sm">{p.author?.full_name ?? p.author?.email ?? "Someone"}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(p.created_at).toLocaleString()}
+                        </p>
+                      </div>
+                      {p.canDelete && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={busy}
+                          onClick={() =>
+                            run(async () => {
+                              await removePost({ data: { id: p.id } });
+                              await refetchPosts();
+                            }, "Post deleted.")
+                          }
+                        >
+                          Delete
+                        </Button>
+                      )}
+                    </div>
+                    <p className="mt-3 whitespace-pre-wrap text-sm">{p.content}</p>
+                  </article>
+                ))}
+              </div>
+            </section>
 
             {isAdmin && (
               <section className="surface p-6">
