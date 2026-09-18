@@ -11,6 +11,14 @@ import {
 } from "@/lib/groups.functions";
 import { getOrgContext } from "@/lib/org.functions";
 import { createPost, deletePost, listPosts } from "@/lib/posts.functions";
+import {
+  REACTIONS,
+  createComment,
+  deleteComment,
+  getGroupEngagement,
+  setReaction,
+  type ReactionKey,
+} from "@/lib/engagement.functions";
 import { AppHeader } from "@/components/AppHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
