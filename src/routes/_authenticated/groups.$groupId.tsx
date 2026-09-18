@@ -194,6 +194,96 @@ function GroupDetailPage() {
                       )}
                     </div>
                     <p className="mt-3 whitespace-pre-wrap text-sm">{p.content}</p>
+
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {REACTIONS.map((r) => {
+                        const count = engagement?.counts[`${p.id}:${r.key}`] ?? 0;
+                        const isMine = engagement?.mine[p.id] === r.key;
+                        return (
+                          <button
+                            key={r.key}
+                            type="button"
+                            disabled={busy || !isMember}
+                            className={`rounded-full border px-3 py-1 text-xs transition-colors ${
+                              isMine
+                                ? "border-primary bg-primary/10 text-foreground"
+                                : "border-border text-muted-foreground hover:bg-muted"
+                            } disabled:opacity-50`}
+                            onClick={() =>
+                              run(async () => {
+                                await react({
+                                  data: {
+                                    postId: p.id,
+                                    reaction: isMine ? null : (r.key as ReactionKey),
+                                  },
+                                });
+                                await refetchEngagement();
+                              }, isMine ? "Reaction removed." : "Reaction added.")
+                            }
+                          >
+                            {r.emoji} {count}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <div className="mt-4 space-y-3 border-t border-border pt-3">
+                      {(engagement?.comments ?? [])
+                        .filter((c) => c.post_id === p.id)
+                        .map((c) => (
+                          <div key={c.id} className="flex items-start justify-between gap-3">
+                            <div>
+                              <p className="text-xs text-muted-foreground">
+                                {c.author?.full_name ?? c.author?.email ?? "Someone"} ·{" "}
+                                {new Date(c.created_at).toLocaleString()}
+                              </p>
+                              <p className="mt-1 whitespace-pre-wrap text-sm">{c.content}</p>
+                            </div>
+                            {c.canDelete && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                disabled={busy}
+                                onClick={() =>
+                                  run(async () => {
+                                    await removeComment({ data: { id: c.id } });
+                                    await refetchEngagement();
+                                  }, "Comment deleted.")
+                                }
+                              >
+                                Delete
+                              </Button>
+                            )}
+                          </div>
+                        ))}
+
+                      {isMember && !data.group.archived_at && (
+                        <div className="flex items-center gap-2">
+                          <Input
+                            value={commentDrafts[p.id] ?? ""}
+                            placeholder="Write a comment…"
+                            onChange={(e) =>
+                              setCommentDrafts((d) => ({ ...d, [p.id]: e.target.value }))
+                            }
+                          />
+                          <Button
+                            size="sm"
+                            disabled={busy || (commentDrafts[p.id] ?? "").trim().length === 0}
+                            onClick={() =>
+                              run(async () => {
+                                await addComment({
+                                  data: { postId: p.id, content: (commentDrafts[p.id] ?? "").trim() },
+                                });
+                                setCommentDrafts((d) => ({ ...d, [p.id]: "" }));
+                                await refetchEngagement();
+                              }, "Comment added.")
+                            }
+                          >
+                            Comment
+                          </Button>
+                        </div>
+                      )}
+                    </div>
                   </article>
                 ))}
               </div>
