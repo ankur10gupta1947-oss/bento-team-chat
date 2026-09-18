@@ -66,6 +66,7 @@ function GroupDetailPage() {
   const isAdmin = data?.isAdmin ?? false;
   const memberIds = new Set((data?.members ?? []).map((m) => m.id));
   const candidates = (ctx?.members ?? []).filter((m) => !memberIds.has(m.id));
+  const isMember = ctx?.profile ? memberIds.has(ctx.profile.id) : false;
 
   return (
     <div className="min-h-screen bg-background">
