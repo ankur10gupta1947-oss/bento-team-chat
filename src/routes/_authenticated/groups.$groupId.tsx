@@ -47,7 +47,21 @@ function GroupDetailPage() {
     queryFn: () => fetchGroup({ data: { id: groupId } }),
   });
 
+  const fetchPosts = useServerFn(listPosts);
+  const addPost = useServerFn(createPost);
+  const removePost = useServerFn(deletePost);
+  const {
+    data: posts,
+    isPending: postsPending,
+    refetch: refetchPosts,
+  } = useQuery({
+    queryKey: ["posts", groupId],
+    queryFn: () => fetchPosts({ data: { groupId } }),
+    enabled: Boolean(data),
+  });
+
   const [newName, setNewName] = useState("");
+  const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
 
   async function run(fn: () => Promise<unknown>, success: string) {
